@@ -1,15 +1,43 @@
 # schoology-api
-Java API and implementation for Schoology (https://schoology.com) 
+Java API and implementation for Schoology (https://schoology.com)
 
-If you just want a simple way to use two-legged authentication with Schoology, here you go. 
+Behold, a straightforward two- and three-legged authentication wrapper for the Schoology REST API. 
 
-Make sure to use the `schoology-oauth` module for the actual OAuth implementation. 
+Make sure to use the `schoology-oauth` module for the actual OAuth ([Scribe](https://github.com/scribejava/scribejava)) implementation. 
  
-Example usage:
+## Example Usage:
 
-~~~~java
+#### 3-Legged Auth:
 
-SchoologyRequestHandler schoology = new OAuthSchoologyRequestHandler(new BasicOAuthResourceLocator(DISTRICT_PREFIX), API_KEY, API_SECRET);
+```java
+
+SchoologyFlow flow = new OAuthSchoologyFlow(DISTRICT_PREFIX, API_KEY, API_SECRET, CALLBACK_URL);
+
+SchoologyToken token = flow.createRequestToken();
+
+String authUrl = token.getAuthorizationUrl();
+
+// redirect client...
+
+String verifier = "[Response from callback URL]";
+
+SchoologyRequestHandler schoology = token.createRequestHandler(verifier);
+
+```
+
+#### 2-Legged Auth:
+
+You can generate a user API key/secret by going to `https://{DISTRICT_PREFIX}.schoology.com/api`
+
+```java
+
+SchoologyRequestHandler schoology = new OAuthSchoologyRequestHandler(DISTRICT_PREFIX, API_KEY, API_SECRET);
+
+```
+
+#### Sending a Request:
+
+```java
 
 SchoologyResponseBody response = schoology.get("sections/123456789").requireSuccess().getBody();
 
@@ -18,8 +46,6 @@ System.out.println(response.getRawData()); // JSON string
 SchoologyNode node = response.parse();
 System.out.println(node.get("JSON_KEY").get(1).asString()); // index 1 of some JSON_KEY property
 
-~~~~
+```
 
-You can generate and API key and secret by going to https://'[DISTRICT_PREFIX].schoology.com/api'
-
-By the way, this is way more straightforward than Schoology's official PHP SDK and only supports two-legged OAuth. If you need any additional features, feel free to send me an email with some info regarding your potential use case. 
+I have been making gradual improvements as people continue to use this API. If you need any additional features, feel free to send me an email with some info regarding your potential use case. 
